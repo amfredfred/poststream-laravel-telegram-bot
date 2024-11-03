@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id(); // Primary key
             $table->foreignId('post_id')->constrained()->onDelete('cascade'); // Foreign key referencing posts
             $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Foreign key referencing users
-            $table->decimal('point', 10, 2)->default(0.00); // Column for earning points as decimal
+            $table->decimal('point', 10, 6)->default(0.00); // Column for earning points as decimal
             $table->timestamps(); // Timestamps for created_at and updated_at
         });
     }

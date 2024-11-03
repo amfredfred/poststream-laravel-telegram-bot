@@ -34,16 +34,13 @@ class PostEarningService {
                 'point' => $rewardPoints,
             ]);
 
-            if($post->user_id !== $user->id){
-                $ownerEarning = PostEarning::create([
-                    'post_id' => $post->id,
-                    'user_id' => $owner->id,
-                    'point' => $rewardOwnerPoints,
-                ]);
+            $ownerEarning = PostEarning::create([
+                'post_id' => $post->id,
+                'user_id' => $owner->id,
+                'point' => $rewardOwnerPoints,
+            ]);
 
-                $owner->increment('balance', $rewardOwnerPoints);
-            }
-
+            $owner->increment('balance', $rewardOwnerPoints);
             $user->increment('balance', $rewardPoints);
 
             return [

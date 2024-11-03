@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('post_id')->constrained()->onDelete('cascade'); // Link to posts table
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // Link to users table, nullable
             $table->timestamp('viewed_at')->useCurrent(); // Record when the post was viewed
-            $table->timestamps(); // For created_at and updated_at
+            $table->timestamps(); 
         });
     }
 

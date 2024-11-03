@@ -65,25 +65,23 @@ class StartCommand extends Command {
             }
         }
 
+        $welcomeMenu = "<b>Hi there!</b>" . PHP_EOL . PHP_EOL .
+        "<i>I’m POSTSTREAMBOT, your go-to bot for turning posts into earnings!</i>" . PHP_EOL . PHP_EOL .
+        "Here’s how it works: " .
+        "📢 Share your posts and earn money effortlessly. " .
+        "💰 You can also add inline links to monetize your messages! Just use the format:" . PHP_EOL . PHP_EOL .
+        "<b>Example:</b> <code>[Text, URL]</code>" . PHP_EOL .
+        "Some text... [Read More, https://to-read-more]" . PHP_EOL . PHP_EOL .
+        "I’m here to help you make the most out of your posts and start earning today." . PHP_EOL . PHP_EOL .
+        "👉 For more assistance, tap the 'Menu' button at the bottom left. " .
+        "💬 You’ll also find the menu there to navigate through various options." . PHP_EOL . PHP_EOL .
+        "Let’s get started! Select an option below to begin your journey with ME";
+
         $bot->sendMessage(
-            $this->createWelcomeMessage(),
+            $welcomeMenu,
             parse_mode:ParseMode::HTML,
             reply_markup: PostService::createStartMenu()
         );
     }
 
-    // Function to create the welcome message
-    protected function createWelcomeMessage(): string {
-        return '<b>Hi there!</b>' . PHP_EOL . PHP_EOL .
-        '<i>I’m POSTSTREAMBOT, your go-to bot for turning posts into earnings!</i>' . PHP_EOL . PHP_EOL .
-        'Here’s how it works: ' .
-        '📢 Share your posts and earn money effortlessly. ' .
-        '💰 You can also add inline links to monetize your messages! Just use the format:' . PHP_EOL . PHP_EOL .
-        '<b>Example:</b> <code>[Text, URL]</code>' . PHP_EOL .
-        'Some text... [Read More, https://to-read-more]' . PHP_EOL . PHP_EOL .
-        'I’m here to help you make the most out of your posts and start earning today.' . PHP_EOL . PHP_EOL .
-        '👉 For more assistance, tap the "Menu" button at the bottom left. ' .
-        '💬 You’ll also find the menu there to navigate through various options.' . PHP_EOL . PHP_EOL .
-        'Let’s get started! Select an option below to begin your journey with ME';
-    }
 }

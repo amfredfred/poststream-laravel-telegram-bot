@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('channel_from',255)->nullable(); // Channel or chat source
             $table->longText('chat_id')->nullable(); // Channel or chat source
             $table->boolean('message')->default(false); // Message indicator
-            $table->decimal('balance', 10, 2)->default(0); // User balance
+            $table->decimal('balance', 10, 6)->default(0); // User balance
             $table->timestamps();
         });
     }
