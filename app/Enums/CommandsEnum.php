@@ -13,6 +13,7 @@ use BenSampo\Enum\Enum;
 * @method static static SUPER_STATS()
 * @method static static ACCOUNT()
 * @method static static CREATE_POST()
+* @method static static BROADCAST_MESSAGE()
 */
 final class CommandsEnum extends Enum {
     const START = 'start';
@@ -23,4 +24,5 @@ final class CommandsEnum extends Enum {
     const SUPER_STATS = 'super_stats';
     const ACCOUNT = 'account';
     const CREATE_POST = 'create_post';
+    const CREATE_BROADCAST = 'broadcast';
 }

@@ -127,6 +127,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'telegram' => [
+            'driver' => 'custom',
+            'via' => \Nutgram\Laravel\Log\NutgramLogger::class,
+            'level' => 'debug',
+            'chat_id' => env('TELEGRAM_LOG_CHANNEL'), // any chat_id where bot can write messages
+        ]
     ],
 
 ];

@@ -35,7 +35,12 @@ use BenSampo\Enum\Enum;
 * @method static static SUBMIT_REQUEST()
 * @method static static TRANSACTION_STATUS()
 * @method static static ADVERTISE_HERE()
-
+* @method static static CANCEL_CREATE_POST()
+* @method static static AUDIENCE_LAST_30_DAYS()
+* @method static static AUDIENCE_LAST_7_DAYS()
+* @method static static AUDIENCE_LAST_24_HOURS()
+* @method static static AUDIENCE_LAST_USER()
+* @method static static START_BROADCAST()
 */
 final class CallBackDataEnum extends Enum {
     // Callback data for creating a post
@@ -124,5 +129,11 @@ final class CallBackDataEnum extends Enum {
     const TRANSACTION_STATUS = 'type:TRANSACTION_STATUS';
 
     const ADVERTISE_HERE = 'type:ADVERTISE_HERE';
+
+    const AUDIENCE_LAST_30_DAYS = 'audience:last_30_days';
+    const AUDIENCE_LAST_7_DAYS = 'audience:last_7_days';
+    const AUDIENCE_LAST_24_HOURS = 'audience:last_24_hours';
+    const AUDIENCE_LAST_USER = 'audience:last_user';
+    const START_BROADCAST = 'type:START_BROADCAST';
 
 }

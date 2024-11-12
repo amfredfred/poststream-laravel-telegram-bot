@@ -24,6 +24,7 @@ class User extends Authenticatable {
         'message',
         'chat_id',
         'balance',
+        'updated_at'
     ];
 
     /**

@@ -12,5 +12,8 @@ return [
     'webapp_url' => env( 'WEBAPP_URL', '' ),
     'min_withdrawal_amount' => env( 'MIN_WITHDRAWAL_AMOUNT', 10 ),
     'post_view_rpoint' => env( 'POST_VIEW_RPOINT', 0.006 ),
-    'post_view_opoint' => env( 'POST_VIEW_OPOINT', 0.006 )
+    'post_view_opoint' => env( 'POST_VIEW_OPOINT', 0.006 ),
+
+    //
+    'admins' => [1497831921]
 ];
