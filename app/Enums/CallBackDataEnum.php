@@ -34,6 +34,8 @@ use BenSampo\Enum\Enum;
 * @method static static ACCOUNT_STATS()
 * @method static static SUBMIT_REQUEST()
 * @method static static TRANSACTION_STATUS()
+* @method static static ADVERTISE_HERE()
+
 */
 final class CallBackDataEnum extends Enum {
     // Callback data for creating a post
@@ -120,4 +122,7 @@ final class CallBackDataEnum extends Enum {
     const SUBMIT_REQUEST = 'type:SUBMIT_REQUEST';
 
     const TRANSACTION_STATUS = 'type:TRANSACTION_STATUS';
+
+    const ADVERTISE_HERE = 'type:ADVERTISE_HERE';
+
 }

@@ -2,10 +2,13 @@
 /** @var SergiX44\Nutgram\Nutgram $bot */
 
 use App\Enums\CallBackDataEnum;
+use App\Enums\CommandsEnum;
 use App\Models\User;
 use App\Telegram\Commands\AccountStatsCommand;
 use App\Telegram\Commands\HelpCommand;
 use App\Telegram\Commands\StartCommand;
+use App\Telegram\Commands\SuperStatisticsCommand;
+use App\Telegram\Conversations\AdvertiseHereConversation;
 use App\Telegram\Conversations\CreatePostConversation;
 use App\Telegram\Conversations\RequestWithdrawalConversation;
 use App\Telegram\Handlers\OnInlineQueryHandler;
@@ -56,16 +59,18 @@ $bot->middleware(function (Nutgram $bot, $next) {
 });
 
 // Register command handlers
-$bot->onCommand( 'start {param}', StartCommand::class );
-$bot->onCommand( 'start', StartCommand::class )->description('Start the bot.');
-$bot->onCommand( 'create_post', CreatePostConversation::class )->description('Start a new post');
-$bot->onCommand( 'help', HelpCommand::class );
-$bot->onCommand( 'account', AccountStatsCommand::class );
+$bot->onCommand( CommandsEnum::START.' {param}', StartCommand::class );
+$bot->onCommand( CommandsEnum::START, StartCommand::class )->description('Start the bot.');
+$bot->onCommand( CommandsEnum::CREATE_POST, CreatePostConversation::class )->description('Start a new post');
+$bot->onCommand( CommandsEnum::HELP, HelpCommand::class );
+$bot->onCommand( CommandsEnum::ACCOUNT, AccountStatsCommand::class );
+$bot->onCommand( CommandsEnum::SUPER_STATS, SuperStatisticsCommand::class );
 
 // Register callback query handlers
 $bot->onCallbackQueryData( CallBackDataEnum::CREATE_POST, CreatePostConversation::class );
 $bot->onCallbackQueryData( CallBackDataEnum::REQUEST_WITHDRAWAL, RequestWithdrawalConversation::class );
 $bot->onCallbackQueryData( CallBackDataEnum::ACCOUNT_STATS, AccountStatsCommand::class );
+$bot->onCallbackQueryData( CallBackDataEnum::ADVERTISE_HERE, AdvertiseHereConversation::class );
 $bot->onCallbackQueryData( CallBackDataEnum::TRANSACTION_STATUS.':[a-zA-Z0-9]+:[A-Z]+', TransactionStatusHandler::class);
 $bot->onCallbackQueryData( CallBackDataEnum::OK, function (Nutgram $bot){
     $bot->message()?->delete();
