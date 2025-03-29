@@ -239,7 +239,6 @@ class CreatePostConversation extends Conversation {
             $this->data->caption = '';
             $this->askForFile( $bot );
             break;
-
             case CallBackDataEnum::CANCEL_CREATE_POST:
             $bot->sendMessage( 'Post creation cancelled.' );
             $this->end();
@@ -299,7 +298,9 @@ class CreatePostConversation extends Conversation {
                 }
                 $this->data = new PostData;
                 $this->end();
+                $bot->message()?->delete();
             } catch ( \Throwable $th ) {
+                Log::channel( 'telegram' )->error( "Failed to publish post: {$th->getMessage()}" );
                 Log::info( 'publishPost -> '.$th->getMessage() );
             }
         }

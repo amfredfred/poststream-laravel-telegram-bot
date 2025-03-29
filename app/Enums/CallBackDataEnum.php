@@ -82,6 +82,9 @@ final class CallBackDataEnum extends Enum {
     // Callback data for removing media from a post
     const ADD_MEDIA = 'type:ADD_MEDIA';
 
+    // Callback data for removing media from a post
+    const SEND_TO_CHAT = 'type:SEND_TO_CHAT';
+
     // Callback data for resetting all buttons on a post
     const RESET_BUTTONS = 'type:RESET_BUTTONS';
 
@@ -116,9 +119,6 @@ final class CallBackDataEnum extends Enum {
     const REMOVE_IMAGE = 'type:REMOVE_IMAGE';
 
     // Callback data for removing an image from a post
-    const REQUEST_WITHDRAWAL = 'type:REQUEST_WITHDRAWAL';
-
-    // Callback data for removing an image from a post
     const ACCOUNT_STATS = 'type:ACCOUNT_STATS';
 
     // Callback data for removing an image from a post
@@ -126,9 +126,8 @@ final class CallBackDataEnum extends Enum {
 
     const SUBMIT_REQUEST = 'type:SUBMIT_REQUEST';
 
-    const TRANSACTION_STATUS = 'type:TRANSACTION_STATUS';
-
     const ADVERTISE_HERE = 'type:ADVERTISE_HERE';
+    const CONNECT_CHAT = 'type:CONNECT_CHAT';
 
     const AUDIENCE_LAST_30_DAYS = 'audience:last_30_days';
     const AUDIENCE_LAST_7_DAYS = 'audience:last_7_days';

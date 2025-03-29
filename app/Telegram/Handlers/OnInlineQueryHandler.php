@@ -28,11 +28,6 @@ class OnInlineQueryHandler {
     }
 
     private function createInlineResult( array $post ): array {
-        // $inlineKeyboard = [
-        //     [
-        //         [ 'text' => 'View Post', 'url' => Configs::BOT_DEEPLINKING . $post->uid ]
-        // ]
-        // ];
 
         $post = new Post( $post );
         $inlineMarkup = InlineKeyboardMarkup::make();
@@ -45,10 +40,10 @@ class OnInlineQueryHandler {
             $commonFields = [
                 'id' => $post->post_id,
                 'caption_entities' => $post->caption_entities,
-                'caption' =>  $post->caption ?? 'Someone shared a file' ,
+                'caption' =>  $post->caption ?? '-----',
                 'reply_markup' => $inlineMarkup,
-                'description' =>  $post->caption ?? 'Someone shared a file' ,
-                'title' =>  $post->caption ?? 'Someone shared a file' ,
+                'description' =>  $post->caption ?? '-----',
+                'title' =>  $post->caption ?? '-----',
             ];
 
             switch ( $post->media_type ) {
@@ -68,10 +63,10 @@ class OnInlineQueryHandler {
         return [
             'type' => 'article',
             'id' => $post->post_id,
-            'title' => mb_strlen( $post->caption ) > 6 ? mb_substr( $post->caption, 0, 6 ) . '...' : $post->caption,
-            'description' =>  $post->caption  ,
+            'title' => mb_strlen( $post->caption ) > 6 ? mb_substr( $post->caption, 0, 6 ) . '...' : $post->caption ?? '-----',
+            'description' =>  $post->caption ?? '-----' ,
             'input_message_content' => [
-                'message_text' =>   $post->caption ,
+                'message_text' =>   $post->caption ?? '-----' ,
                 'entities' => $post->caption_entities,
             ],
             'entities' => $post->caption_entities,

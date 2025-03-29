@@ -131,7 +131,7 @@ return [
             'driver' => 'custom',
             'via' => \Nutgram\Laravel\Log\NutgramLogger::class,
             'level' => 'debug',
-            'chat_id' => env('TELEGRAM_LOG_CHANNEL'), // any chat_id where bot can write messages
+            'chat_id' => env('NUTGRAM_LOG_CHAT_ID'),
         ]
     ],
 

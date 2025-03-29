@@ -4,6 +4,7 @@ namespace App\Helpers;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use SergiX44\Nutgram\Nutgram;
 
 class TelegramHelper {
 
@@ -142,6 +143,16 @@ class TelegramHelper {
         } catch ( \Exception $e ) {
             Log::error( "Error fetching file URL: {$e->getMessage()}" );
             return null;
+        }
+    }
+
+    public static function isAdminOrCreator( Nutgram $bot, int|string $chatId, int $userId ): bool {
+        try {
+            $chatMember = $bot->getChatMember( $chatId, $userId );
+            return in_array( $chatMember->status->value, [ 'administrator', 'creator' ] );
+        } catch ( \Throwable $e ) {
+            Log::error( 'Failed to check admin status: ' . $e->getMessage() );
+            return false;
         }
     }
 }

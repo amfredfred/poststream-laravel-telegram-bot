@@ -53,21 +53,21 @@ class BroadcastMessageConversation extends Conversation {
             'Who would you like to send the message to?',
             reply_markup: InlineKeyboardMarkup::make()
             ->addRow(
-                InlineKeyboardButton::make( 'Last 30 days', callback_data: CallBackDataEnum::AUDIENCE_LAST_30_DAYS ),
-                InlineKeyboardButton::make( 'Last 7 days', callback_data: CallBackDataEnum::AUDIENCE_LAST_7_DAYS )
+                InlineKeyboardButton::make( 'User last 30 days', callback_data: CallBackDataEnum::AUDIENCE_LAST_30_DAYS ),
+                InlineKeyboardButton::make( 'User last 7 days', callback_data: CallBackDataEnum::AUDIENCE_LAST_7_DAYS )
             )
             ->addRow(
-                InlineKeyboardButton::make( 'Last 24 hours', callback_data: CallBackDataEnum::AUDIENCE_LAST_24_HOURS ),
-                InlineKeyboardButton::make( 'Last user', callback_data: CallBackDataEnum::AUDIENCE_LAST_USER )
+                InlineKeyboardButton::make( 'User last 24 hours', callback_data: CallBackDataEnum::AUDIENCE_LAST_24_HOURS ),
+                InlineKeyboardButton::make( 'User last user', callback_data: CallBackDataEnum::AUDIENCE_LAST_USER )
             )
         );
         $this->next( 'handleCallback' );
     }
 
     public function confirmBroadcast( Nutgram $bot ) {
-        $userCount = count( $this->data->users );
+        $userCount = count( $this->data->userChatIds );
         $bot->sendMessage(
-            "Preview of your broadcast:\n\n{$this->data->caption}\n\n=====\nAudience: {$userCount} user(s)",
+            "Preview of your broadcast #{$this->data->broadcastId}:\n\n{$this->data->caption}\n\n=====\nAudience: {$userCount} user(s)",
             entities: $this->data->captionEntities,
             reply_markup: InlineKeyboardMarkup::make()
             ->addRow(
@@ -77,6 +77,7 @@ class BroadcastMessageConversation extends Conversation {
                 InlineKeyboardButton::make( '❌ Cancel', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
             )
         );
+        $this->next( 'handleCallback' );
     }
 
     public function handleCallback( Nutgram $bot ) {
@@ -89,16 +90,16 @@ class BroadcastMessageConversation extends Conversation {
 
         switch ( $callbackData ) {
             case CallBackDataEnum::AUDIENCE_LAST_30_DAYS:
-            $this->data->users = UserService::getUsersLast30Days();
+            $this->data->userChatIds = UserService::getUsersLast30DaysChatIds();
             break;
             case CallBackDataEnum::AUDIENCE_LAST_7_DAYS:
-            $this->data->users = UserService::getUsersLast7Days();
+            $this->data->userChatIds = UserService::getUsersLast7DaysChatIds();
             break;
             case CallBackDataEnum::AUDIENCE_LAST_24_HOURS:
-            $this->data->users = UserService::getUsersLast24Hours();
+            $this->data->userChatIds = UserService::getUsersLast24HoursChatIds();
             break;
             case CallBackDataEnum::AUDIENCE_LAST_USER:
-            $this->data->users = [ UserService::getLastUser() ] ;
+            $this->data->userChatIds = [ UserService::getLastUser()->chat_id ] ;
             // Wrap in a collection
             break;
             case CallBackDataEnum::START_BROADCAST:
@@ -115,16 +116,24 @@ class BroadcastMessageConversation extends Conversation {
     }
 
     public function sendToSelectedUsers( Nutgram $bot ) {
-        Log::info( [ '$user->chat_id' => $this->data->users ] );
-        Log::channel( 'telegram' )->info( 'Hello world!', [ 'user' => optional( $this->data->users )->toArray() ] );
-        foreach ( $this->data->users as $user ) {
-            Log::info( [ '$this->data->users' => $user ] );
-            Log::info( [ '$this->data->users' => $user ] );
-            Log::info( [ '$this->data->users' => $user ] );
-            $bot->sendMessage( text:$this->data->caption, chat_id:$user->chat_id, entities: $this->data->captionEntities );
+        try {
+            foreach ( $this->data->userChatIds as $key => $chat_id ) {
+                try {
+                    $bot->sendMessage(
+                        text: $this->data->caption,
+                        chat_id: $chat_id,
+                        entities: $this->data->captionEntities
+                    );
+                } catch ( \Throwable $userException ) {
+                    Log::channel( 'telegram' )->error( "Failed to send message to user {$chat_id}: {$userException->getMessage()}" );
+                }
+            }
+            $bot->sendMessage( 'Your message has been broadcast!' );
+        } catch ( \Throwable $broadcastException ) {
+            Log::channel( 'telegram' )->error( "Braodcast #{$this->data->broadcastId}\nFailed to complete broadcast: {$broadcastException->getMessage()}" );
+            $bot->sendMessage( 'There was an error with the broadcast. Please try again.' );
         }
-
-        $bot->sendMessage( 'Your message has been broadcast!' );
         $this->end();
     }
+
 }

@@ -25,4 +25,5 @@ final class CommandsEnum extends Enum {
     const ACCOUNT = 'account';
     const CREATE_POST = 'create_post';
     const CREATE_BROADCAST = 'broadcast';
+    const CONNECT_CHAT = 'connect_chat';
 }

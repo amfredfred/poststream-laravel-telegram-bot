@@ -35,7 +35,7 @@ class User extends Authenticatable {
     protected function casts(): array {
         return [
             'message' => 'boolean',
-            'balance' => 'decimal:2',
+            'balance' => 'decimal:6',
         ];
     }
 }

@@ -9,7 +9,7 @@ class BroadCastData {
     public string $mediaType;
     public string $mediaId;
     public array $captionEntities;
-    public array $users; // Corrected to use array
+    public array $userChatIds; // Corrected to use array
     public string $broadcastId;
     public ?InlineKeyboardMarkup $inline_keyboard_markup;
 
@@ -19,7 +19,7 @@ class BroadCastData {
         $this->mediaId = '';
         $this->captionEntities = [];
         $this->broadcastId = '';
-        $this->users = []; // Added missing semicolon
+        $this->userChatIds = []; // Added missing semicolon
         $this->inline_keyboard_markup = null;
     }
 }
