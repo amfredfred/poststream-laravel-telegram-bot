@@ -15,6 +15,7 @@ use App\Telegram\Conversations\CreatePostConversation;
 use App\Telegram\Handlers\OnInlineQueryHandler;
 use App\Telegram\Handlers\OnMyChatMember;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use SergiX44\Nutgram\Nutgram;
 use SergiX44\Nutgram\Telegram\Exceptions\TelegramException;
 
@@ -77,10 +78,17 @@ $bot->onCallbackQueryData( CallBackDataEnum::OK, function (Nutgram $bot){
 
 $bot->onInlineQuery(OnInlineQueryHandler::class);
 $bot->onMyChatMember(OnMyChatMember::class);
-
-
+$bot->onCallbackQueryData('refresh_chat_list', function(Nutgram $bot) {
+    $bot->answerCallbackQuery(text: "Refreshing...");
+    return;
+});
 $bot->onApiError(function (Nutgram $bot, TelegramException $exception) {
-    echo $exception->getMessage(); // Bad Request: chat not found
-    echo $exception->getCode(); // 400
-    error_log($exception);
+    Log::error('Telegram API Error', [
+        'message' => $exception->getMessage(),
+        'code' => $exception->getCode(),
+        'chat_id' => $bot->chatId(),
+        'user_id' => $bot->userId(),
+        'trace' => $exception->getTraceAsString(),
+        'request' => $exception->getParameters() ?? null,
+    ]);
 });

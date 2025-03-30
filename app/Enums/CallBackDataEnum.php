@@ -49,14 +49,13 @@ final class CallBackDataEnum extends Enum {
     // Callback data for canceling post creation
     const CANCEL_CREATE_POST = 'type:CANCEL_CREATE_POST';
 
+    const BACK_TO_PREVIEW = 'type:BACK_TO_PREVIEW';
+
     // Callback data for adding a link or button to a post
     const ADD_BUTTON = 'type:ADD_BUTTON';
 
     // Callback data for previewing a post
     const PREVIEW_POST = 'type:PREVIEW_POST';
-
-    // Callback data for publishing a post
-    const PUBLISH_POST = 'type:PUBLISH_POST';
 
     // Callback data for editing a post
     const EDIT_POST = 'type:EDIT_POST';
@@ -84,6 +83,9 @@ final class CallBackDataEnum extends Enum {
 
     // Callback data for removing media from a post
     const SEND_TO_CHAT = 'type:SEND_TO_CHAT';
+
+    // Callback data for removing media from a post
+    const FORWARD_TO_CHAT_ID = 'type:FORWARD_TO_CHAT_ID';
 
     // Callback data for resetting all buttons on a post
     const RESET_BUTTONS = 'type:RESET_BUTTONS';

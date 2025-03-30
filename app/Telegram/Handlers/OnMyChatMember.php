@@ -82,6 +82,7 @@ class OnMyChatMember {
                         'invited_by_username' => $actor->username,
                         'invited_by_id' => $actor->id,
                         'bot_status' => $newStatus,
+                        'chat_username' => $chat->username,
                         'last_checked_at' => now(),
                     ]
                 );

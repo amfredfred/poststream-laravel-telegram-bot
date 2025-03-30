@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->bigInteger('chat_id')->unique()->comment('Telegram chat ID');
             $table->string('chat_title')->nullable();
+            $table->string('chat_username')->unique()->nullable()->comment('Telegram chat username');
             $table->enum('chat_type', [
                 ChatType::CHANNEL->value,
                 ChatType::GROUP->value,

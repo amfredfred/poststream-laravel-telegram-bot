@@ -9,6 +9,7 @@ class PostData {
     public string $mediaId;
     public array $captionEntities;
     public string $postId;
+    public string $postMessageId;
     public ?InlineKeyboardMarkup $inline_keyboard_markup;
 
     public function __construct() {
@@ -18,5 +19,6 @@ class PostData {
         $this->captionEntities = [];
         $this->postId = '';
         $this->inline_keyboard_markup = null;
+        $this->postMessageId = '';
     }
 }

@@ -4,6 +4,7 @@ namespace App\Telegram\Conversations;
 
 use App\Enums\CallBackDataEnum;
 use App\Helpers\TelegramHelper;
+use App\Models\BotChatMembership;
 use App\Models\Post;
 use App\Types\PostData;
 // Import the PostData class
@@ -65,12 +66,11 @@ class CreatePostConversation extends Conversation {
             'Now, please upload your file [photo, video, etc.].' ,
             reply_markup: InlineKeyboardMarkup::make()
             ->addRow(
-                InlineKeyboardButton::make( 'Preview', callback_data: CallBackDataEnum::PREVIEW_POST ),
                 InlineKeyboardButton::make( 'Add Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
             )
             ->addRow(
-                InlineKeyboardButton::make( 'Publish', callback_data: CallBackDataEnum::PUBLISH_POST ),
-                InlineKeyboardButton::make( '❌ Cancel Post', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
+                InlineKeyboardButton::make( '✅ Done', callback_data: CallBackDataEnum::PREVIEW_POST ),
+                InlineKeyboardButton::make( '❌ Cancel', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
             )
         );
         $this->next( 'processFile' );
@@ -94,17 +94,14 @@ class CreatePostConversation extends Conversation {
 
         $bot->sendMessage(
             "{$this->data->mediaType} received! You can change it by uploading a different one.",
-            reply_markup: InlineKeyboardMarkup::make()
-            ->addRow(
-                InlineKeyboardButton::make( 'Preview', callback_data: CallBackDataEnum::PREVIEW_POST ),
-                InlineKeyboardButton::make( 'Add Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
+            reply_markup: InlineKeyboardMarkup::make() ->addRow(
+                InlineKeyboardButton::make( ( $this->data->inline_keyboard_markup ? 'Change':'Add' ).' Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
             )
             ->addRow(
-                InlineKeyboardButton::make( 'Publish', callback_data: CallBackDataEnum::PUBLISH_POST ),
-                InlineKeyboardButton::make( '❌ Cancel Post', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
+                InlineKeyboardButton::make( '✅ Done', callback_data: CallBackDataEnum::PREVIEW_POST ),
+                InlineKeyboardButton::make( '❌ Cancel', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
             )
         );
-
         $this->next( 'processFile' );
     }
 
@@ -154,26 +151,27 @@ class CreatePostConversation extends Conversation {
                 $buttons = array_map( fn( $btn ) => InlineKeyboardButton::make( $btn[ 'text' ], $btn[ 'url' ] ), $row );
                 $inlineMarkup->addRow( ...$buttons );
             }
+
             $this->data->inline_keyboard_markup = $inlineMarkup;
         } catch ( Exception $error ) {
             Log::error( "Button formatting error: {$error->getMessage()}" );
             $bot->sendMessage( $error->getMessage(), parse_mode: ParseMode::HTML );
         }
 
+        $this->next( 'askForButtons' );
+
         $bot->sendMessage(
             'Buttons added! You can preview or publish the post.',
             reply_markup: InlineKeyboardMarkup::make()
             ->addRow(
-                InlineKeyboardButton::make( 'Preview', callback_data: CallBackDataEnum::PREVIEW_POST ),
-                InlineKeyboardButton::make( 'Add Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
+                InlineKeyboardButton::make( ( $this->data->inline_keyboard_markup ? 'Change':'Add' ).' Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
             )
             ->addRow(
-                InlineKeyboardButton::make( 'Publish', callback_data: CallBackDataEnum::PUBLISH_POST ),
-                InlineKeyboardButton::make( '❌ Cancel Post', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
+                InlineKeyboardButton::make( '✅ Done', callback_data: CallBackDataEnum::PREVIEW_POST ),
+                InlineKeyboardButton::make( '❌ Cancel', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
             )
         );
 
-        $this->next( 'sendPostPreview' );
     }
 
     public function sendPostPreview( Nutgram $bot ) {
@@ -182,21 +180,21 @@ class CreatePostConversation extends Conversation {
         }
 
         if ( $this->data->mediaType === 'video' ) {
-            $bot->sendVideo(
+            $msg = $bot->sendVideo(
                 $this->data->mediaId,
                 caption: $this->data->caption,
                 caption_entities: $this->data->captionEntities,
                 reply_markup: $this->data->inline_keyboard_markup
             );
         } elseif ( $this->data->mediaType === 'photo' ) {
-            $bot->sendPhoto(
+            $msg = $bot->sendPhoto(
                 $this->data->mediaId,
                 caption: $this->data->caption,
                 caption_entities: $this->data->captionEntities,
                 reply_markup: $this->data->inline_keyboard_markup
             );
         } elseif ( $this->data->caption ) {
-            $bot->sendMessage(
+            $msg = $bot->sendMessage(
                 $this->data->caption ,
                 entities: $this->data->captionEntities,
                 reply_markup: $this->data->inline_keyboard_markup
@@ -205,52 +203,36 @@ class CreatePostConversation extends Conversation {
             return;
         }
 
-        $replyMarkup = InlineKeyboardMarkup::make()
-        ->addRow(
-            InlineKeyboardButton::make( 'Add Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
-        )
-        ->addRow(
-            InlineKeyboardButton::make( 'Publish', callback_data: CallBackDataEnum::PUBLISH_POST ),
-            InlineKeyboardButton::make( '❌ Cancel Post', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
-        );
-
-        if ( $this->data->mediaId ) {
-            $replyMarkup->addRow(
-                InlineKeyboardButton::make( "Remove {$this->data->mediaType}", callback_data: CallBackDataEnum::REMOVE_MEDIA )
-            );
-        } else {
-            $replyMarkup->addRow(
-                InlineKeyboardButton::make( 'Upload file', callback_data: CallBackDataEnum::ADD_MEDIA )
-            );
-        }
+        $this->data->postMessageId = $msg->message_id;
 
         $bot->sendMessage(
             '__You can publish your post now. or make changes',
-            reply_markup: $replyMarkup
+            reply_markup: $this->previePostButtons()
         );
+
+        $this->next( 'sendPostPreview' );
+    }
+
+    public function sendPostToChat( Nutgram $bot ) {
+        if ( $bot->isCallbackQuery() ) return $this->handleCallback( $bot );
     }
 
     public function handleCallback( Nutgram $bot ) {
-
         $bot->message()->delete();
-
-        switch ( $bot->callbackQuery()->data ) {
+        switch ( $bot?->callbackQuery()?->data ) {
             case CallBackDataEnum::SKIP_CAPTION:
             $this->data->caption = '';
             $this->askForFile( $bot );
             break;
+
             case CallBackDataEnum::CANCEL_CREATE_POST:
             $bot->sendMessage( 'Post creation cancelled.' );
             $this->end();
             break;
 
             case CallBackDataEnum::ADD_BUTTON:
-            $bot->sendMessage( PostService::addButtonText(), parse_mode:ParseMode::HTML );
+            $bot->sendMessage( PostService::addButtonText(), parse_mode: ParseMode::HTML );
             $this->next( 'askForButtons' );
-            break;
-
-            case CallBackDataEnum::PUBLISH_POST:
-            $this->publishPost( $bot );
             break;
 
             case CallBackDataEnum::PREVIEW_POST:
@@ -269,39 +251,81 @@ class CreatePostConversation extends Conversation {
             $this->askForFile( $bot );
             break;
 
+            case CallBackDataEnum::BACK_TO_PREVIEW:
+            $bot->sendMessage(
+                '__You can publish your post now. or make changes',
+                reply_markup: $this->previePostButtons()
+            );
+            $this->next( 'handleCallback' );
+            break;
+
+            case CallBackDataEnum::SEND_TO_CHAT:
+            [ 'message' => $message, 'buttons' => $buttons ] = PostService::userChatBotMember( $bot->user()->id );
+            $bot->sendMessage( $message, parse_mode: ParseMode::HTML, reply_markup:$buttons );
+            $this->next( 'sendPostToChat' );
+            break;
+
             default:
-            $bot->sendMessage( 'Invalid option. Please try again.' );
+            if ( preg_match( '/^type:FORWARD_TO_CHAT_ID(?:[_\-][a-zA-Z0-9]+)*$/', $bot?->callbackQuery()?->data ) ) {
+                // Extract the suffix ( e.g., '123' from 'FORWARD_TO_CHAT_ID_123' )
+                $chatIdSuffix = str_replace( 'type:FORWARD_TO_CHAT_ID', '', $bot->callbackQuery()->data );
+                $chatInfo = BotChatMembership::where( 'chat_id', $chatIdSuffix )->firstOrFail();
+                $copiedMessage = $bot->copyMessage(
+                    chat_id:$chatIdSuffix,
+                    from_chat_id:$bot->chat()->id,
+                    message_id:( int )$this->data->postMessageId,
+                    caption:$this->data->caption,
+                    caption_entities:$this->data->captionEntities,
+                    reply_markup:$this->data->inline_keyboard_markup
+                );
+                $messageLink = "https://t.me/$chatInfo->chat_username/$copiedMessage->message_id";
+                if($chatInfo->chat_username){
+                    $chatIdSuffix = "@$chatInfo->chat_username";
+                }
+                $message = '✅ Post sent to '.$chatInfo->chat_title ?? $chatIdSuffix.' successfuly... ';
+                if ( $chatInfo->chat_username ) {
+                    $message .= " <a href='$messageLink'>View</a>";
+                }
+                $bot->answerCallbackQuery( text: 'Post sent to '.$chatIdSuffix.' successfuly...' );
+                $bot->sendMessage(
+                    $message,
+                    parse_mode:ParseMode::HTML,
+                    reply_markup: $this->previePostButtons()
+                );
+            } else {
+                $bot->sendMessage( 'Invalid option. Please try again.' );
+                if ( $this->data->caption || $this->data->mediaId ) {
+                    $bot->sendMessage(
+                        '__You can publish your post now. or make changes',
+                        reply_markup: $this->previePostButtons()
+                    );
+                }
+            }
+            $this->next( 'handleCallback' );
             break;
         }
     }
 
-    public function publishPost( Nutgram $bot ) {
-        try {
-            $post = Post::create( [
-                'user_id' => $bot->get( 'user' )->id,
-                'caption' => $this->data->caption,
-                'media_type' => $this->data->mediaType,
-                'media_id' => $this->data->mediaId,
-                'caption_entities' => $this->data->captionEntities,
-                'post_id' => $this->data->postId,
-                'inline_keyboard_markup' => $this->data->inline_keyboard_markup ? $this->data->inline_keyboard_markup->toArray() : null,
-            ] );
+    public function previePostButtons() {
+        $replyMarkup = InlineKeyboardMarkup::make()
+        ->addRow(
+            InlineKeyboardButton::make( '📢 Publish', callback_data: CallBackDataEnum::SEND_TO_CHAT ),
+            InlineKeyboardButton::make( '❌ Cancel', callback_data: CallBackDataEnum::CANCEL_CREATE_POST )
+        )->addRow(
+            InlineKeyboardButton::make( ( $this->data->inline_keyboard_markup ? 'Change':'Add' ).' Buttons', callback_data: CallBackDataEnum::ADD_BUTTON )
+        );
 
-            if ( $post ) {
-                [ $shareLink ] = TelegramHelper::makeShareHandle( $post->post_id, $bot->get( 'user' )->id );
-                $bot->sendMessage(
-                    PostService::postPublishedText( $post->post_id, $shareLink ),
-                    parse_mode:ParseMode::HTML,
-                    reply_markup: PostService::createPostPublishedMenu( $post->post_id ) );
-                } else {
-                    $bot->sendMessage( 'Failed to publish the post. Please try again.' );
-                }
-                $this->data = new PostData;
-                $this->end();
-                $bot->message()?->delete();
-            } catch ( \Throwable $th ) {
-                Log::channel( 'telegram' )->error( "Failed to publish post: {$th->getMessage()}" );
-                Log::info( 'publishPost -> '.$th->getMessage() );
-            }
+        if ( $this->data->mediaId ) {
+            $replyMarkup->addRow(
+                InlineKeyboardButton::make( "Remove {$this->data->mediaType}", callback_data: CallBackDataEnum::REMOVE_MEDIA ),
+                InlineKeyboardButton::make( 'Change file', callback_data: CallBackDataEnum::ADD_MEDIA )
+            );
+        } else {
+            $replyMarkup->addRow(
+                InlineKeyboardButton::make( 'Upload file', callback_data: CallBackDataEnum::ADD_MEDIA )
+            );
         }
+
+        return $replyMarkup;
     }
+}
